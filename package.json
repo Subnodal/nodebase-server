@@ -1,0 +1,24 @@
+{
+    "name": "nodebase",
+    "version": "0.1.0",
+    "description": "The server software for Nodebase, the database system by Subnodal.",
+    "main": "main.js",
+    "keywords": [
+        "database",
+        "data",
+        "authentication",
+        "auth"
+    ],
+    "author": "Subnodal Technologies (https://subnodal.com)",
+    "dependencies": {
+        "bcryptjs": "^2.4.3",
+        "body-parser": "^1.19.2",
+        "bson": "^4.6.1",
+        "express": "^4.17.3",
+        "mkdirp": "^1.0.4",
+        "yargs": "^17.3.1"
+    },
+    "bin": {
+        "nodebase": "main.js"
+    }
+}
