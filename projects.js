@@ -7,6 +7,8 @@
     Licenced by the Subnodal Open-Source Licence, which can be found at LICENCE.md.
 */
 
+const path = require("path");
+
 var storage = require("./storage");
 
 exports.PROJECTS_LIST_FILE = "projects.bson";
@@ -43,4 +45,12 @@ exports.create = function(owner, projectId, projectName) {
     };
 
     exports.save();
+};
+
+exports.readFile = function(projectId, file, fallback) {
+    return storage.read(path.join("projects", projectId, file), fallback);
+};
+
+exports.writeFile = function(projectId, file, data) {
+    return storage.write(path.join("projects", projectId, file), data);
 };

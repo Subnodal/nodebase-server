@@ -16,6 +16,7 @@ const bodyParser = require("body-parser");
 var package = require("./package.json");
 var users = require("./users");
 var projects = require("./projects");
+var db = require("./db");
 
 var app = express();
 
@@ -81,8 +82,36 @@ function checkProjectAccess(level = "read") {
     };
 }
 
+function parsePath(request, response, next) {
+    if (typeof(request.query.path) != "string") {
+        response.json({status: "error", code: "invalidPath", message: "Please provide a database path to read from"});
+        response.status(400);
+
+        return;
+    }
+
+    try {
+        request.path = JSON.parse(request.query.path);
+    } catch (e) {
+        response.json({status: "error", code: "invalidPath", message: "The provided path is not a valid JSON array"});
+        response.status(400);
+
+        return;
+    }
+
+    if (typeof(request.path) != "object" || !request.path.isArray()) {
+        response.json({status: "error", code: "invalidPath", message: "The provided path is not a valid JSON array"});
+        response.status(400);
+
+        return;
+    }
+
+    next();
+}
+
 users.init();
 projects.init();
+db.init();
 
 app.get("/", function(request, response) {
     response.json({nodebase: package.version});
@@ -128,6 +157,22 @@ app.get("/projects", authenticate, function(request, response) {
 
 app.get("/projects/:projectId", authenticate, checkProjectExists, checkProjectAccess("read"), function(request, response) {
     response.json(projects.get(request.params.projectId));
+});
+
+app.get("/projects/:projectId/database", authenticate, checkProjectExists, checkProjectAccess("read"), parsePath, function(request, response) {
+    response.json(db.get(request.params.projectId, request.path));
+});
+
+app.put("/projects/:projectId/database", authenticate, checkProjectExists, checkProjectAccess("write"), parsePath, bodyParser.json(), function(request, response) {
+    db.set(request.params.projectId, request.path, request.body);
+
+    response.json({status: "success"});
+});
+
+app.delete("/projects/:projectId/database", authenticate, checkProjectExists, checkProjectAccess("write"), parsePath, function(request, response) {
+    db.delete(request.params.projectId, request.path);
+
+    response.json({status: "success"});
 });
 
 app.post("/createProject", authenticate, bodyParser.json(), function(request, response) {
